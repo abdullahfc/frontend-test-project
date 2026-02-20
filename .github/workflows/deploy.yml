@@ -13,13 +13,12 @@ jobs:
       - name: Get the latest code
         uses: actions/checkout@v4
 
-      # This installs a standard Linux tool to handle password logins securely
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install sshpass -y
+      - name: Install sshpass and rsync
+        run: sudo apt-get update && sudo apt-get install sshpass rsync -y
 
-      # This uses the native secure copy (scp) command to bypass the CyberPanel welcome message
-      - name: Copy files to Server
+      - name: Copy files to Server using Rsync
         env:
           SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+        # Rsync is much smarter than scp and handles server welcome messages better
         run: |
-          sshpass -e scp -o StrictHostKeyChecking=no -r ./* ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP }}:/home/test-frontend.local/public_html/
+          sshpass -e rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./ ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP }}:/home/test-frontend.local/public_html/
